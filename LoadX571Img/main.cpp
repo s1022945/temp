@@ -30,7 +30,7 @@ BOOL WINAPI WritePrivateProfileString(
   _In_ LPCTSTR lpString,
   _In_ LPCTSTR lpFileName
 );
-
+//GetPrivateProfileInt(_T("NewProjectionReadioSel"), _T("Index"), 0,g_UISetting.m_strT6nsmgrInIPath);
 int main()
 {
 	//取得Defectfile 完整路徑

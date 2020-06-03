@@ -23,3 +23,11 @@ CursorCol=82
 CursorRow=30
 TopLine=5
 LeftChar=1
+[Editors]
+Order=0
+Focused=0
+[Editor_0]
+CursorCol=25
+CursorRow=30
+TopLine=10
+LeftChar=1
