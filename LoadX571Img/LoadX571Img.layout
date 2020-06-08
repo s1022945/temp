@@ -24,6 +24,7 @@ CursorRow=30
 TopLine=5
 LeftChar=1
 [Editors]
+<<<<<<< HEAD
 Order=0,-1
 Focused=0
 [Editor_0]
@@ -32,4 +33,12 @@ Top=1
 CursorCol=51
 CursorRow=293
 TopLine=273
+=======
+Order=0
+Focused=0
+[Editor_0]
+CursorCol=25
+CursorRow=30
+TopLine=10
+>>>>>>> 02ae2c43c391feda4c0e9a229f88be3a4d7014e7
 LeftChar=1

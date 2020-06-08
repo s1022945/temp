@@ -69,9 +69,19 @@ vector<string> split(const string& str, const string& delim);	//字串分割
 vector<struct tag_Defect_Info> GetDefectList(string &DFTFilePath);	// 處理Defect List
 bool DefectSort (tag_Defect_Info a, tag_Defect_Info b);	// 依照RVRP Defect List 排序
 
+<<<<<<< HEAD
 configItem configIniRead(string &configPath);
 ORSCurrentPic GetORSCurrentPic(string Picpath);
 
+=======
+BOOL WINAPI WritePrivateProfileString(
+  _In_ LPCTSTR lpAppName,
+  _In_ LPCTSTR lpKeyName,
+  _In_ LPCTSTR lpString,
+  _In_ LPCTSTR lpFileName
+);
+//GetPrivateProfileInt(_T("NewProjectionReadioSel"), _T("Index"), 0,g_UISetting.m_strT6nsmgrInIPath);
+>>>>>>> 02ae2c43c391feda4c0e9a229f88be3a4d7014e7
 int main()
 { 
     //取得 config.ini 完整路徑 
