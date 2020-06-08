@@ -7,6 +7,10 @@
 #include <cstdlib> // atoi 函數所在函式庫
 #include <algorithm>
 #include <iomanip>
+#include <io.h>
+#include <dirent.h>
+
+#define MAX_LENGTH 1024
 
 using namespace std;
 
@@ -20,22 +24,92 @@ struct tag_Defect_Info
 	string  ImageFile1;				// 20 bytes, Image file1
 };
 
+// config.ini Item
+//========================
+typedef struct configItem
+{
+	struct EQ
+    {
+    	string  EQID;
+        string tempDFTPath;
+        string tempDFTFile;
+    }EQ;
+    struct ORS
+    {
+        string  path;
+    }ORS;
+
+	struct FileServer
+	{
+		string  path;
+	}FileServer;
+
+	struct BC
+	{
+		string  path;
+	}BC;
+
+	struct tempProductInfo
+	{
+		string  product;
+		string   operation;
+	}tempProductInfo;
+        
+}configItem;
+//========================
+
+// ORS Current Pictures
+typedef struct ORSCurrentPic
+{
+	string glassID;
+	string No;
+}ORSCurrentPic;
+
 vector<string> split(const string& str, const string& delim);	//字串分割
 vector<struct tag_Defect_Info> GetDefectList(string &DFTFilePath);	// 處理Defect List
 bool DefectSort (tag_Defect_Info a, tag_Defect_Info b);	// 依照RVRP Defect List 排序
 
-BOOL WINAPI WritePrivateProfileString(
-  _In_ LPCTSTR lpAppName,
-  _In_ LPCTSTR lpKeyName,
-  _In_ LPCTSTR lpString,
-  _In_ LPCTSTR lpFileName
-);
+configItem configIniRead(string &configPath);
+ORSCurrentPic GetORSCurrentPic(string Picpath);
 
 int main()
-{
-	//取得Defectfile 完整路徑
-	string DFTFilePath = ".\\Q\\FG5013GXS1\\F505P\\F505P175\\F505P175BF\\Format\\7571F505P175BF.cmo";
+{ 
+    //取得 config.ini 完整路徑 
+    //================================================== 
+    char tempStr[MAX_LENGTH];
+    string configPath;       // path of config.ini 
+    getcwd(tempStr, MAX_LENGTH);
+    configPath.append(string(tempStr));
+    memset(tempStr, 0, strlen(tempStr));	//清空陣列
+    configPath.append("\\config.ini");
+    cout << "configPath = " << configPath << endl;
+    //==================================================
+    
+	configItem sconfigItem = configIniRead(configPath);
+	//cout << "sconfigItem.EQ.tempDFTFile = " << sconfigItem.EQ.tempDFTFile << endl;
 
+	//取得ORS 上傳路徑下Review圖片檔名
+	//D:\git\temp\LoadX571Img\Q\FG5013GXS1\F505P\F505P175\F505P175BF\Image
+	string ORSPath;
+	ORSPath.clear();
+	ORSPath.append(sconfigItem.ORS.path);
+	ORSPath.append("\\");
+	ORSPath.append(sconfigItem.EQ.EQID);
+	ORSPath.append("*.jpg");
+	ORSCurrentPic sORSCurrentPic = GetORSCurrentPic(ORSPath);
+	
+	//取得Defectfile 完整路徑
+	//".\\Q\\FG5013GXS1\\F505P\\F505P175\\F505P175BF\\Format\\7571F505P175BF.cmo"
+	string DFTFilePath;
+	DFTFilePath.append(sconfigItem.FileServer.path); //Q:
+	DFTFilePath.append("\\");	//"Q:\"
+	DFTFilePath.append(sconfigItem.tempProductInfo.product);	//"Q:\FG5013GXS1"
+	DFTFilePath.append("\\");	//"Q:\FG5013GXS1\"
+	DFTFilePath.append("");
+	
+	//Q:\FG5013GXS1\F505P
+	//Q:\FG5013GXS1
+	
 	//讀取Defect file --> DefectList
 	vector<struct tag_Defect_Info> DefectList = GetDefectList(DFTFilePath);
 	cout << "Defect List" << endl;
@@ -143,4 +217,91 @@ bool DefectSort (tag_Defect_Info a, tag_Defect_Info b)
 		return true;
 	}
 	return false;
+}
+
+//取得Ini 變數值
+configItem configIniRead(string &configPath)
+{
+	
+    //取Ini Setting
+    //memset(tempStr, 0, strlen(tempStr));	//清空陣列 
+    //GetPrivateProfileString("EQ", "EQID", 0, tempStr, MAX_LENGTH, "D:\\git\\temp\\LoadX571Img\\config.ini");
+    configItem sconfigItem;
+	char tempStr[MAX_LENGTH];
+	//EQ
+	GetPrivateProfileString("EQ", "EQID", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.EQ.EQID.clear();
+	sconfigItem.EQ.EQID.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+	GetPrivateProfileString("EQ", "tempDFTPath", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.EQ.tempDFTPath.clear();
+	sconfigItem.EQ.tempDFTPath.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+	GetPrivateProfileString("EQ", "tempDFTFile", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.EQ.tempDFTFile.clear();
+	sconfigItem.EQ.tempDFTFile.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+	
+	//ORS
+	GetPrivateProfileString("ORS", "path", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.ORS.path.clear();
+	sconfigItem.ORS.path.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+
+	//FileServer
+	GetPrivateProfileString("FileServer", "path", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.FileServer.path.clear();
+	sconfigItem.FileServer.path.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+
+	//BC
+	GetPrivateProfileString("BC", "path", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.BC.path.clear();
+	sconfigItem.BC.path.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+
+	//tempProductInfo
+	GetPrivateProfileString("tempProductInfo", "product", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.tempProductInfo.product.clear();
+	sconfigItem.tempProductInfo.product.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+	GetPrivateProfileString("tempProductInfo", "operation", 0, tempStr, MAX_LENGTH, configPath.c_str());
+	sconfigItem.tempProductInfo.operation.clear();
+	sconfigItem.tempProductInfo.operation.append(string(tempStr));
+	memset(tempStr, 0, strlen(tempStr));	//清空陣列
+	
+	return sconfigItem;
+}
+
+ORSCurrentPic GetORSCurrentPic(string Picpath)
+{
+	ORSCurrentPic sORSCurrentPic;
+	HANDLE hFile = INVALID_HANDLE_VALUE; 
+	WIN32_FIND_DATA pNextInfo;  
+
+	hFile = FindFirstFile(Picpath.c_str(), &pNextInfo);
+	
+	if(INVALID_HANDLE_VALUE == hFile)
+	{
+		MessageBox(NULL, TEXT("ORS 資料夾下找不到對應的照片"), TEXT( "Error" ), MB_OK );
+		return sORSCurrentPic;
+	}
+
+	char infPath[MAX_PATH] = {0};
+	if(pNextInfo.cFileName[0] != '.')
+	{
+		cout << pNextInfo.cFileName.substr(2,5) << endl;
+	}
+
+	while(FindNextFile(hFile,&pNextInfo))  
+	{  
+		if(pNextInfo.cFileName[0] == '.')
+		{
+			continue;  
+		}
+		cout << pNextInfo.cFileName << endl;
+	}
+	
+	//return FALSE;
+	return sORSCurrentPic;
 }
